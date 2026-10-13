@@ -80,7 +80,8 @@ export default function BooksList() {
 
   useEffect(() => {
     // Update URL without re-rendering
-    const params = new URLSearchParams({ page: page.toString() })
+    const params = new URLSearchParams()
+    params.set('page', page.toString())
     if (q) params.set('q', q)
     if (categoryId) params.set('category_id', categoryId)
     setSearchParams(params)
