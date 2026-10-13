@@ -54,18 +54,20 @@ export default function BooksList() {
       setError(null)
       
       try {
-        const query = new URLSearchParams()
-        if (q) query.set('q', q)
-        if (categoryId) query.set('category_id', categoryId)
-        query.set('page', page.toString())
-        query.set('size', size.toString())
+        const query: Record<string, string> = {}
+        if (q) query.q = q
+        if (categoryId) query.category_id = categoryId
+        query.page = page.toString()
+        query.size = size.toString()
+        
+        const searchParams = new URLSearchParams(query)
         
         const data = await api.get<{
           items: Book[]
           page: number
           size: number
           total: number
-        }>(`/books?${query.toString()}`)
+        }>(`/books?${searchParams.toString()}`)
         
         setBooks(data.items)
         setTotal(data.total)
@@ -80,10 +82,9 @@ export default function BooksList() {
 
   useEffect(() => {
     // Update URL without re-rendering
-    const params = new URLSearchParams()
-    params.set('page', page.toString())
-    if (q) params.set('q', q)
-    if (categoryId) params.set('category_id', categoryId)
+    const params: Record<string, string> = { page: page.toString() }
+    if (q) params.q = q
+    if (categoryId) params.category_id = categoryId
     setSearchParams(params)
   }, [q, categoryId, page, setSearchParams])
 

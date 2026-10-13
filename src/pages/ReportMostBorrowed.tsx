@@ -37,10 +37,9 @@ export default function ReportMostBorrowed() {
     }
 
     try {
-      const query = new URLSearchParams({
-        from: from,
-        to: to,
-      })
+      const query = new URLSearchParams()
+      query.set('from', from)
+      query.set('to', to)
       
       const data = await api.get<{ from: string; to: string; rows: ReportRow[] }>(
         `/reports/most-borrowed?${query.toString()}`
