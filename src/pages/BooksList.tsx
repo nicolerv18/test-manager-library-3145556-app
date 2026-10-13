@@ -54,12 +54,11 @@ export default function BooksList() {
       setError(null)
       
       try {
-        const query = new URLSearchParams({
-          q: q || undefined,
-          category_id: categoryId || undefined,
-          page: page.toString(),
-          size: size.toString(),
-        })
+        const query = new URLSearchParams()
+        if (q) query.set('q', q)
+        if (categoryId) query.set('category_id', categoryId)
+        query.set('page', page.toString())
+        query.set('size', size.toString())
         
         const data = await api.get<{
           items: Book[]

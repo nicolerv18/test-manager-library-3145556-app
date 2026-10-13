@@ -42,14 +42,13 @@ export default function LoansList() {
       setError(null)
       
       try {
-        const params = new URLSearchParams({
-          from: from || undefined,
-          to: to || undefined,
-          status: status || undefined,
-          member_id: memberId || undefined,
-          page: page.toString(),
-          size: size.toString(),
-        })
+        const params = new URLSearchParams()
+        if (from) params.set('from', from)
+        if (to) params.set('to', to)
+        if (status) params.set('status', status)
+        if (memberId) params.set('member_id', memberId)
+        params.set('page', page.toString())
+        params.set('size', size.toString())
         
         const data = await api.get<{
           items: Loan[]

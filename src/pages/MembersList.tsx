@@ -27,11 +27,10 @@ export default function MembersList() {
       setError(null)
       
       try {
-        const params = new URLSearchParams({
-          q: q || undefined,
-          page: page.toString(),
-          size: size.toString(),
-        })
+        const params = new URLSearchParams()
+        if (q) params.set('q', q)
+        params.set('page', page.toString())
+        params.set('size', size.toString())
         
         const data = await api.get<{
           items: Member[]

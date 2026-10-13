@@ -57,6 +57,7 @@ export default function LoansNew() {
       const data = await api.get<{
         items: Book[]
       }>(`/books?q=${encodeURIComponent(query)}&page=1&size=10`)
+      setBooks(data.items)
       setSearchBooks(query)
     } catch (err: any) {
       // Silently fail
