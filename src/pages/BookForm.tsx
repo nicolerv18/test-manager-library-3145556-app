@@ -25,6 +25,7 @@ export default function BookForm() {
   const [totalCopies, setTotalCopies] = useState(1)
   const [cover, setCover] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
+  const [coverRemoved, setCoverRemoved] = useState(false)
 
   const [book, setBook] = useState<{
     id: string
@@ -69,6 +70,10 @@ export default function BookForm() {
           setIsbn(data.isbn)
           setCategoryId(data.category_id)
           setTotalCopies(data.total_copies)
+          if (data.cover_key) {
+            const blob = await fetchBlob(`/books/${data.id}/cover`)
+            if (blob) setCoverPreview(URL.createObjectURL(blob))
+          }
         } catch (err: any) {
           setError(err.error?.message || 'Error cargando libro')
         }
@@ -88,28 +93,37 @@ export default function BookForm() {
 
     try {
       if (id) {
-        // Update existing book
+        // Update existing book (JSON, per the contract)
         await api.put(`/books/${id}`, {
           title: title.trim(),
           author: author.trim(),
           category_id: categoryId,
           total_copies: totalCopies,
         })
-      } else {
-        // Create new book
-        const formData = new FormData()
-        formData.append('title', title.trim())
-        formData.append('author', author.trim())
-        formData.append('isbn', isbn)
-        formData.append('category_id', categoryId)
-        formData.append('total_copies', totalCopies.toString())
+        // Cover is a separate multipart route: PUT /books/{id}/cover
         if (cover) {
+          const formData = new FormData()
           formData.append('file', cover)
+          await api.upload(`/books/${id}/cover`, formData)
+        } else if (coverRemoved) {
+          await api.delete(`/books/${id}/cover`)
         }
-        
-        await api.post('/books', formData)
+      } else {
+        // Create new book (JSON), then upload the cover if one was chosen
+        const created = await api.post<{ id: string }>('/books', {
+          title: title.trim(),
+          author: author.trim(),
+          isbn,
+          category_id: categoryId,
+          total_copies: totalCopies,
+        })
+        if (cover) {
+          const formData = new FormData()
+          formData.append('file', cover)
+          await api.upload(`/books/${created.id}/cover`, formData)
+        }
       }
-      
+
       setSuccess(true)
       setTimeout(() => navigate('/books'), 1500)
     } catch (err: any) {
@@ -139,8 +153,10 @@ export default function BookForm() {
   }
 
   const handleCoverRemove = () => {
+    if (coverPreview?.startsWith('blob:')) URL.revokeObjectURL(coverPreview)
     setCover(null)
     setCoverPreview(null)
+    setCoverRemoved(true)
   }
 
   if (success) {
